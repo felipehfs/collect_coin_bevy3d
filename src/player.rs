@@ -6,7 +6,7 @@ use crate::camera::MainCamera;
 const PLAYER_SPEED: f32 = 20.0;
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 pub struct PlayerPlugin;
 

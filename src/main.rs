@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use coin::CoinPlugin;
+use hud::HUDPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
@@ -8,6 +9,7 @@ mod player;
 mod camera;
 mod world;
 mod coin;
+mod hud;
 
 fn main() {
     App::new()
@@ -24,5 +26,6 @@ fn main() {
         .add_plugins(camera::CameraPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(WorldPlugin)
+        .add_plugins(HUDPlugin)
         .run();
 }

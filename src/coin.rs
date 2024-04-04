@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier3d::{prelude::*, rapier::geometry::CollisionEventFlags};
 use rand::prelude::*;
 
+use crate::hud::UserCoins;
+
 pub struct CoinPlugin;
 
 #[derive(Debug, Component)]
@@ -14,27 +16,28 @@ impl Plugin for CoinPlugin {
     }
 }
 
-
 fn handle_collision(
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
-    coins: Query<Entity, With<Coin>>,
+    coins: Query<(), With<Coin>>,
+    mut coin_info: Query<&mut UserCoins>,
 ) {
+    let mut coin_label = coin_info.single_mut();
+    let mut remove_entity = |entity: Entity| {
+        commands.entity(entity).despawn_recursive();
+        coin_label.0 += 1;
+    };
+
     for event in collision_events.read() {
         match event {
-            CollisionEvent::Started(entity1, entity2, flags)
-                if flags.contains(CollisionEventFlags::SENSOR) =>
-            {
-                info!("A Sensor detected");
+            CollisionEvent::Started(entity1, entity2, flags) if flags.contains(CollisionEventFlags::SENSOR) => {
                 if coins.contains(*entity1) {
-                    commands.entity(*entity1).despawn();
+                    remove_entity(*entity1);
                 } else if coins.contains(*entity2) {
-                    commands.entity(*entity2).despawn()
+                    remove_entity(*entity2);
                 }
             }
-            _ => {
-                info!("Not a sensor detected");
-            }
+            _ => {}
         }
     }
 }
@@ -57,6 +60,8 @@ fn spawn_coin(
                 transform: Transform::from_xyz(x, 0.6, z),
                 ..default()
             })
+            .insert(RigidBody::Dynamic)
+            .insert(GravityScale(0.0))
             .insert(Collider::ball(0.6))
             .insert(Sensor)
             .insert(Coin)

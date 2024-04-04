@@ -19,7 +19,7 @@ fn spawn_world(
         .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(Plane3d::default().mesh().size(60.0, 60.0))),
             material: materials.add(Color::WHITE),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            transform: Transform::from_xyz(0.0, -0.1, 0.0),
             ..default()
         })
         .insert(Collider::cuboid(30.0, 0.0, 30.0));
