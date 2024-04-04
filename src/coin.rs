@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{prelude::*, rapier::geometry::CollisionEventFlags};
 use rand::prelude::*;
 
 pub struct CoinPlugin;
@@ -10,20 +10,32 @@ pub struct Coin;
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_coin)
-            .add_systems(FixedUpdate, handle_collision);
+            .add_systems(Update, handle_collision);
     }
 }
 
-fn handle_collision(
-    mut collision_events: EventReader<CollisionEvent>,
-    mut contact_force_events: EventReader<ContactForceEvent>,
-) {
-    for collision_event in collision_events.read() {
-        info!("Received collision event: {:?}", collision_event);
-    }
 
-    for contact_force_event in contact_force_events.read() {
-        info!("Received contact force event: {:?}", contact_force_event);
+fn handle_collision(
+    mut commands: Commands,
+    mut collision_events: EventReader<CollisionEvent>,
+    coins: Query<Entity, With<Coin>>,
+) {
+    for event in collision_events.read() {
+        match event {
+            CollisionEvent::Started(entity1, entity2, flags)
+                if flags.contains(CollisionEventFlags::SENSOR) =>
+            {
+                info!("A Sensor detected");
+                if coins.contains(*entity1) {
+                    commands.entity(*entity1).despawn();
+                } else if coins.contains(*entity2) {
+                    commands.entity(*entity2).despawn()
+                }
+            }
+            _ => {
+                info!("Not a sensor detected");
+            }
+        }
     }
 }
 
@@ -34,7 +46,7 @@ fn spawn_coin(
 ) {
     let mut rng = thread_rng();
 
-    for _ in 0..5 {
+    for _ in 0..15 {
         let x = rng.gen_range(-30.0..30.0);
         let z = rng.gen_range(-30.0..30.0);
 
@@ -46,7 +58,7 @@ fn spawn_coin(
                 ..default()
             })
             .insert(Collider::ball(0.6))
-            .insert(Sensor::default())
+            .insert(Sensor)
             .insert(Coin)
             .insert(ActiveEvents::COLLISION_EVENTS);
     }

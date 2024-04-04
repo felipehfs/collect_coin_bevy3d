@@ -20,9 +20,9 @@ fn main() {
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(CoinPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(WorldPlugin)
-        .add_plugins(CoinPlugin)
         .run();
 }
