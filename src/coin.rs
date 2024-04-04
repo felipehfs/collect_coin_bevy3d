@@ -4,6 +4,8 @@ use rand::prelude::*;
 
 use crate::hud::UserCoins;
 
+const MAX_COIN: u32 = 5;
+
 pub struct CoinPlugin;
 
 #[derive(Debug, Component)]
@@ -12,7 +14,8 @@ pub struct Coin;
 impl Plugin for CoinPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_coin)
-            .add_systems(Update, handle_collision);
+            .add_systems(Update, handle_collision)
+            .add_systems(Update, handle_game_over);
     }
 }
 
@@ -42,6 +45,18 @@ fn handle_collision(
     }
 }
 
+fn handle_game_over(mut commands: Commands, total_coins_query: Query<(), With<Coin>>) {
+    let total = total_coins_query.iter().len();
+    if total == 0 {
+        commands.spawn(TextBundle::from_section("You Win!", TextStyle { font_size: 48.0, color: Color::YELLOW, ..default() }).with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(125.0),
+            left: Val::Px(135.0),
+            ..default()
+        }));
+    }   
+}
+
 fn spawn_coin(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -49,7 +64,7 @@ fn spawn_coin(
 ) {
     let mut rng = thread_rng();
 
-    for _ in 0..15 {
+    for _ in 0..MAX_COIN {
         let x = rng.gen_range(-30.0..30.0);
         let z = rng.gen_range(-30.0..30.0);
 
